@@ -1009,6 +1009,13 @@ h2.article-head {
 .nav-container .nav-arrow {
   color: #34495e;
 }
+#comments {
+  padding: article-padding;
+  margin: block-margin 0;
+}
+#comments a {
+  color: color-link;
+}
 @-moz-keyframes shine {
   0%, 100% {
     opacity: 0.1;
