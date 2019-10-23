@@ -67,7 +67,7 @@
       
         <li class="list-item">
           
-            <a href="/" class="item-link active">Home</a>
+            <a href="/" class="item-link">Home</a>
           
         </li>
       
@@ -94,7 +94,7 @@
         
           <li class="menu-item">
             
-              <a href="/" class="menu-link mobile-active">Home</a>
+              <a href="/" class="menu-link">Home</a>
             
           </li>
         
@@ -115,77 +115,68 @@
   </div>
 </header>
 
-    <main class="app-body">
+    <div id="article-banner">
+  <h2>Archives</h2>
+  <p class="post-date">文章归档</p>
+</div>
+<main class="app-body" id="archives">
   
-    <article class="article-card">
-      <h2 class="article-head">
-        <a href="/2019/10/22/hello-world/">Hello World</a>
-      </h2>
-      <p class="article-date">October 22, 2019</p>
-      
-      <div class="article-summary">
-        
-          Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer ...
-        
+  
+  
+    <section class="time-section">
+  <h1 class="section-year">
+    2019
+  </h1>
+  <div class="section-list">
+    
+    
+      <div class="section-list-item">
+        <a href="/2019/10/22/hello-world/" class="archive-title">Hello World</a>
+        <p class="archive-date">10-22</p>
       </div>
-      <a class="more" href="/2019/10/22/hello-world/">Read more</a>
-    </article>
+    
+  </div>
+</section>
   
-    <article class="article-card">
-      <h2 class="article-head">
-        <a href="/2018/07/12/test/">test article</a>
-      </h2>
-      <p class="article-date">July 12, 2018</p>
-      
-        
-  <a href="/tags#heelo" >
-    <span class="tag-code">heelo</span>
-  </a>
-
-  <a href="/tags#world" >
-    <span class="tag-code">world</span>
-  </a>
-
-      
-      <div class="article-summary">
-        
-          ljkhhkjh
-1System.out.print("hello world");
-
-        
+    <section class="time-section">
+  <h1 class="section-year">
+    2018
+  </h1>
+  <div class="section-list">
+    
+    
+      <div class="section-list-item">
+        <a href="/2018/07/12/test/" class="archive-title">test article</a>
+        <p class="archive-date">07-12</p>
       </div>
-      <a class="more" href="/2018/07/12/test/">Read more</a>
-    </article>
+    
+  </div>
+</section>
   
-    <article class="article-card">
-      <h2 class="article-head">
-        <a href="/2016/07/12/hexo/">基于hexo搭建一个漂亮的博客站点</a>
-      </h2>
-      <p class="article-date">July 12, 2016</p>
-      
-        
-  <a href="/tags#hexo" >
-    <span class="tag-code">hexo</span>
-  </a>
-
-  <a href="/tags#github" >
-    <span class="tag-code">github</span>
-  </a>
-
-      
-      <div class="article-summary">
-        
-          每位开发同学阶段性的总想总结下自己的知识，分享工作心得，在开源中国、CSDN写博文显得不太高大上，自己写一个博客，需要部署，服务器和数据库需要购买，前后端代码都得写。Hexo让我们搭建一个博客站点不再需要写后端代码，不需要数据库，一个纯的静态站点，既方便又是免费的。对于程序员来说，该工具非常 ...
-        
+    <section class="time-section">
+  <h1 class="section-year">
+    2016
+  </h1>
+  <div class="section-list">
+    
+    
+      <div class="section-list-item">
+        <a href="/2016/07/12/hexo/" class="archive-title">基于hexo搭建一个漂亮的博客站点</a>
+        <p class="archive-date">07-12</p>
       </div>
-      <a class="more" href="/2016/07/12/hexo/">Read more</a>
-    </article>
-  
-
+    
+  </div>
+</section>
   
 </main>
 
-
+<script>
+  (function () {
+    var url = 'http://doit.cc/archives/2016/07/index.html';
+    $('#article-banner').geopattern(url);
+    $('.header').removeClass('fixed-header');
+  })();
+</script>
     <div class="scroll-top">
   <span class="arrow-icon"></span>
 </div>
