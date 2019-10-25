@@ -219,13 +219,19 @@
     <!-- 二维码 END -->
     
       <!-- UY START -->
-      <script type="text/java" charset="utf-8" src="https://changyan.itc.cn/js/lib/jquery.js"></script>
+      <style>
+        /* 畅言去广告 */
+        #​feedAv {
+          position: absolute;!important;
+          height: 0px !important;
+          transform: scale(0) !important;
+        }
 
-      <script type="text/java" charset="utf-8" src="https://changyan.sohu.com/js/changyan.labs.https.js?appid=cys0NKu99"></script>
-
-       <style>#feedAv{ margin-top: -250px !important;transform: scale(0) !important;}</style>​
-
-  <div id="SOHUCS" ></div>
+        #pop_ad {
+          transform: scale(0) !important;
+        }​
+      </style>
+      <div id="SOHUCS" ></div>
       <script charset="utf-8" type="text/javascript" src="https://koit.oss-cn-beijing.aliyuncs.com/static/js/changyan.js" ></script>
       <script type="text/javascript">
         window.changyan.api.config({
