@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="Knowledge Of IT">
+  <meta name="keyword" content="hexo-theme, vuejs">
+  
+    <link rel="shortcut icon" type="image/ico" href="css/images/favicon.ico"/>
+  
+  <title>
+    
+      Dockerfile常用命令 | Knowledge Of IT
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  
+    <script src="/js/qrious.js"></script>
+  
+  
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+</head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png" />
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>Knowledge Of IT</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">Home</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">Tags</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">Archives</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">Home</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">Tags</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">Archives</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>Dockerfile常用命令</h2>
+  <p class="post-date">2017-09-01</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><p>Dockfile是一种被Docker程序解释的脚本 Dockerfile由一条一条的指令组成，每条指令对应Linux下面的一条命令 Docker程序将这些Dockerfile指令翻译真正的Linux命令 Dockerfile有自己书写格式和支持的命令，Docker程序解决这些命令间的依赖关系，类似于Makefile Docker程序将读取Dockerfile，根据指令生成定制的image</p>
+<blockquote>
+<p>相比image这种黑盒子，Dockerfile这种显而易见的脚本更容易被使用者接受，它明确的表明image是怎么产生的。有了Dockerfile，当我们需要定制自己额外的需求时，只需在Dockerfile上添加或者修改指令，重新生成image即可，省去了敲命令的麻烦。 </p>
+</blockquote>
+<h2 id="Dockerfile的书写规则及指令使用方法"><a href="#Dockerfile的书写规则及指令使用方法" class="headerlink" title="Dockerfile的书写规则及指令使用方法"></a>Dockerfile的书写规则及指令使用方法</h2><ul>
+<li>Dockerfile的指令是忽略大小写的，建议使用大写这样可以与真正需要执行的shell指令区分开，使用#作为注释，每一行只支持一条指令，每条指令可以携带多个参数。</li>
+<li>Dockerfile的指令根据作用可以分为两种，构建指令和设置指令。构建指令用于构建image，其指定的操作不会在运行image的容器上执行；设置指令用于设置image的属性，其指定的操作将在运行image的容器中执行。</li>
+</ul>
+<h2 id="1-FROM（指定基础image）"><a href="#1-FROM（指定基础image）" class="headerlink" title="1. FROM（指定基础image）"></a>1. FROM（指定基础image）</h2><p>构建指令，必须指定且需要在Dockerfile其他指令的前面（必须以FROM指令作为第一条非注释指令）。后续的指令都依赖于该指令指定的image。FROM指令指定的基础image可以是官方远程仓库中的，也可以位于本地仓库  该指令有两种格式：</p>
+<ul>
+<li>指定基础image为该image的最后修改的版本<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FROM &lt;image&gt;</span><br></pre></td></tr></table></figure></li>
+<li>指定基础image为该image的一个tag版本。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FROM &lt;image&gt;:&lt;tag&gt;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="2-MAINTAINER（用来指定镜像创建者信息）"><a href="#2-MAINTAINER（用来指定镜像创建者信息）" class="headerlink" title="2. MAINTAINER（用来指定镜像创建者信息）"></a>2. MAINTAINER（用来指定镜像创建者信息）</h2><p>构建指令，用于将image的制作者相关的信息写入到image中。当我们对该image执行docker inspect命令时，输出中有相应的字段记录该信息。 指令格式:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MAINTAINER &lt;name&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="3-RUN（安装软件用）"><a href="#3-RUN（安装软件用）" class="headerlink" title="3.RUN（安装软件用）"></a>3.RUN（安装软件用）</h2><p>构建指令，RUN可以运行任何被基础image支持的命令。如基础image选择了CentOS，那么软件管理部分只能使用CentOS的命令(如yum)。</p>
+<p>RUN命令将在当前image中执行任意合法命令并提交执行结果。命令执行提交后，就会自动执行Dockerfile中的下一个指令。<br>层级 RUN 指令和生成提交是符合Docker核心理念的做法。它允许像版本控制那样，在任意一个点，对image 镜像进行定制化构建。<br>RUN 指令缓存不会在下个命令执行时自动失效。比如 RUN apt-get dist-upgrade -y 的缓存就可能被用于下一个指令. –no-cache 标志可以被用于强制取消缓存使用。<br>请结合Dockerfile最佳实践 将多个RUN指令合并为一个，使得你的镜像变的更轻量。<br>指令格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RUN &lt;command&gt; (the command is run in a shell - /bin/sh -c)    # 常用</span><br><span class="line">RUN [&quot;executable&quot;, &quot;param1&quot;, &quot;param2&quot; ... ] (exec form)</span><br></pre></td></tr></table></figure>
+<h2 id="4-CMD（设置container启动时执行的操作）"><a href="#4-CMD（设置container启动时执行的操作）" class="headerlink" title="4.CMD（设置container启动时执行的操作）"></a>4.CMD（设置container启动时执行的操作）</h2><p>设置指令，用于container启动时指定的操作。该操作可以是执行自定义脚本，也可以是执行系统命令。该指令只能在文件中存在一次，如果有多个，则只执行最后一条。 该指令有三种格式：</p>
+<p>常用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CMD [&quot;executable&quot;,&quot;param1&quot;,&quot;param2&quot;] (like an exec, this is the preferred form)</span><br></pre></td></tr></table></figure>
+<p>几乎不用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CMD command param1 param2 (as a shell)</span><br></pre></td></tr></table></figure>
+<p>当Dockerfile指定了ENTRYPOINT时使用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CMD [&quot;param1&quot;,&quot;param2&quot;] (as default parameters to ENTRYPOINT)</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-ENTRYPOINT（设置container启动时执行的操作）"><a href="#5-ENTRYPOINT（设置container启动时执行的操作）" class="headerlink" title="5.ENTRYPOINT（设置container启动时执行的操作）"></a>5.ENTRYPOINT（设置container启动时执行的操作）</h2><p>设置指令，指定容器启动时执行的命令，可以多次设置，但是只有最后一个有效。</p>
+<p>两种格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ENTRYPOINT [&quot;executable&quot;, &quot;param1&quot;, &quot;param2&quot;] (like an exec, the preferred form)</span><br><span class="line">ENTRYPOINT command param1 param2 (as a shell)</span><br></pre></td></tr></table></figure>
+<p>两种使用情况：</p>
+<p>独自使用： 当独自使用时，如果你还使用了CMD命令且CMD是一个完整的可执行的命令，那么CMD指令和ENTRYPOINT会互相覆盖只有最后一个CMD或者ENTRYPOINT有效。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># CMD指令将不会被执行，只有ENTRYPOINT指令被执行  </span><br><span class="line">CMD echo “Hello, World!”  </span><br><span class="line">ENTRYPOINT ls -l</span><br></pre></td></tr></table></figure>
+<p>CMD指令配合使用 使用CMD指令来指定ENTRYPOINT的默认参数，这时CMD指令不是一个完整的可执行命令，仅仅是参数部分；ENTRYPOINT指令只能使用JSON方式指定执行命令，而不能指定参数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FROM ubuntu  </span><br><span class="line">CMD [&quot;-l&quot;]  </span><br><span class="line">ENTRYPOINT [&quot;/usr/bin/ls&quot;]</span><br></pre></td></tr></table></figure>
+<h2 id="6-EXPOSE（指定容器需要映射到宿主机器的端口）"><a href="#6-EXPOSE（指定容器需要映射到宿主机器的端口）" class="headerlink" title="6.EXPOSE（指定容器需要映射到宿主机器的端口）"></a>6.EXPOSE（指定容器需要映射到宿主机器的端口）</h2><p>设置指令，该指令会将容器中的端口映射成宿主机器中的某个端口。 </p>
+<h2 id="7-ENV（用于设置环境变量）"><a href="#7-ENV（用于设置环境变量）" class="headerlink" title="7. ENV（用于设置环境变量）"></a>7. ENV（用于设置环境变量）</h2><p>ENV指令可以用于为docker容器设置环境变量,设置了后，后续的RUN命令都可以使用，container启动后，可以通过docker inspect查看这个环境变量。 格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ENV &lt;key&gt; &lt;value&gt;</span><br></pre></td></tr></table></figure>
+<p>假如你安装了JAVA程序，需要设置JAVA_HOME，那么可以在Dockerfile中这样写：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ENV JAVA_HOME /path/to/java/dirent</span><br></pre></td></tr></table></figure>
+<h2 id="8-ADD（从src复制文件到container的dest路径）"><a href="#8-ADD（从src复制文件到container的dest路径）" class="headerlink" title="8.ADD（从src复制文件到container的dest路径）"></a>8.ADD（从src复制文件到container的dest路径）</h2><p>请使用COPY代替ADD，COPY功能简单够用请结合Dockerfile最佳实践“COPY与ADD优先使用前者”部分使用。 构建指令，所有拷贝到container中的文件和文件夹权限为0755，uid和gid为0；如果是一个目录，那么会将该目录下的所有文件添加到container中，不包括目录；如果文件是可识别的压缩格式，则docker会帮忙解压缩（注意压缩格式）；如果是文件且中不使用斜杠结束，则会将视为文件，的内容会写入；如果是文件且中使用斜杠结束，则会文件拷贝到目录下。</p>
+<p>格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ADD &lt;src&gt; &lt;dest&gt;</span><br></pre></td></tr></table></figure>
+<p>是相对被构建的源目录的相对路径，可以是文件或目录的路径，也可以是一个远程的文件url; （copy仅提供本地文件向容器的基本功能）<br>是container中的绝对路径</p>
+<h2 id="9-COPY-复制本地主机的src文件为container的dest"><a href="#9-COPY-复制本地主机的src文件为container的dest" class="headerlink" title="9.COPY(复制本地主机的src文件为container的dest)"></a>9.COPY(复制本地主机的src文件为container的dest)</h2><p>复制本地主机的src文件（为Dockerfile所在目录的相对路径、文件或目录 ）到container的dest。目标路径不存在时，会自动创建。 格式： 当使用本地目录为源目录时，推荐使用COPY,当使用本地目录为URL如：（<a href="http://aaa.bb.c.com/xx.file）时，请先行下载到本地，还是推荐使用COPY。" target="_blank" rel="noopener">http://aaa.bb.c.com/xx.file）时，请先行下载到本地，还是推荐使用COPY。</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">COPY &lt;src&gt; &lt;dest&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="10-WORKDIR（切换目录）"><a href="#10-WORKDIR（切换目录）" class="headerlink" title="10.WORKDIR（切换目录）"></a>10.WORKDIR（切换目录）</h2><p>设置指令，可以多次切换(相当于cd命令)，对RUN,CMD,ENTRYPOINT生效。 格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WORKDIR /path/to/workdir</span><br></pre></td></tr></table></figure>
+
+<p>举例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 在 /p1/p2 下执行 vim a.txt  </span><br><span class="line">WORKDIR /p1      #切换了一次</span><br><span class="line">WORKDIR p2       #又切换了一次</span><br><span class="line">RUN vim a.txt</span><br></pre></td></tr></table></figure>
+<h2 id="11-ARG-设置构建镜像时变量"><a href="#11-ARG-设置构建镜像时变量" class="headerlink" title="11.ARG(设置构建镜像时变量)"></a>11.ARG(设置构建镜像时变量)</h2><p>ARG指令在Docker1.9版本才加入的新指令，ARG 定义的变量只在建立 image 时有效，建立完成后变量就失效消失 格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ARG &lt;key&gt;=&lt;value&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="12-LABEL-定义标签"><a href="#12-LABEL-定义标签" class="headerlink" title="12.LABEL(定义标签)"></a>12.LABEL(定义标签)</h2><p>定义一个 image 标签 Owner，并赋值，其值为变量 Name 的值。 格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LABEL Owner=$Name</span><br></pre></td></tr></table></figure>
+</section>
+    <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#docker" >
+    <span class="tag-code">docker</span>
+  </a>
+
+  <a href="/tags#k8s" >
+    <span class="tag-code">k8s</span>
+  </a>
+
+  <a href="/tags#dockerfile" >
+    <span class="tag-code">dockerfile</span>
+  </a>
+
+      </div>
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/2016/08/09/shell/">
+        <span class="nav-arrow">← </span>
+        
+          作为开发掌握这些linux命令差不多够用了
+        
+      </a>
+    
+    
+      <a class="nav-right" href="/2017/09/01/dockerfileBest/">
+        
+          Dockerfile最佳实践
+        
+        <span class="nav-arrow"> →</span>
+      </a>
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+      <div class="money-like">
+        <div class="reward-btn">
+          赏
+          <span class="money-code">
+            <span class="alipay-code">
+              <div class="code-image"></div>
+              <b>使用支付宝打赏</b>
+            </span>
+            <span class="wechat-code">
+              <div class="code-image"></div>
+              <b>使用微信打赏</b>
+            </span>
+          </span>
+        </div>
+        <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
+      </div>
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+      <div class="qrcode">
+        <canvas id="share-qrcode"></canvas>
+        <p class="notice">扫描二维码，分享此文章</p>
+      </div>
+    
+    <!-- 二维码 END -->
+    
+      <!-- UY START -->
+      <style>
+        /* 畅言去广告 */
+        #​feedAv {
+          position: absolute;!important;
+          height: 0px !important;
+          transform: scale(0) !important;
+        }
+
+        #pop_ad {
+          transform: scale(0) !important;
+        }​
+      </style>
+      <div id="SOHUCS" ></div>
+      <script charset="utf-8" type="text/javascript" src="https://koit.oss-cn-beijing.aliyuncs.com/static/js/changyan.js" ></script>
+      <script type="text/javascript">
+        window.changyan.api.config({
+          appid: 'cyuvdPSsX',
+          conf: 'prod_0cc244e175e0eb2a4ecb53a5bb07ccd3'
+        });
+      </script>​
+      <!-- UY END -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#Dockerfile的书写规则及指令使用方法"><span class="toc-nav-text">Dockerfile的书写规则及指令使用方法</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#1-FROM（指定基础image）"><span class="toc-nav-text">1. FROM（指定基础image）</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#2-MAINTAINER（用来指定镜像创建者信息）"><span class="toc-nav-text">2. MAINTAINER（用来指定镜像创建者信息）</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#3-RUN（安装软件用）"><span class="toc-nav-text">3.RUN（安装软件用）</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#4-CMD（设置container启动时执行的操作）"><span class="toc-nav-text">4.CMD（设置container启动时执行的操作）</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#5-ENTRYPOINT（设置container启动时执行的操作）"><span class="toc-nav-text">5.ENTRYPOINT（设置container启动时执行的操作）</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#6-EXPOSE（指定容器需要映射到宿主机器的端口）"><span class="toc-nav-text">6.EXPOSE（指定容器需要映射到宿主机器的端口）</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#7-ENV（用于设置环境变量）"><span class="toc-nav-text">7. ENV（用于设置环境变量）</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#8-ADD（从src复制文件到container的dest路径）"><span class="toc-nav-text">8.ADD（从src复制文件到container的dest路径）</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#9-COPY-复制本地主机的src文件为container的dest"><span class="toc-nav-text">9.COPY(复制本地主机的src文件为container的dest)</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#10-WORKDIR（切换目录）"><span class="toc-nav-text">10.WORKDIR（切换目录）</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#11-ARG-设置构建镜像时变量"><span class="toc-nav-text">11.ARG(设置构建镜像时变量)</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#12-LABEL-定义标签"><span class="toc-nav-text">12.LABEL(定义标签)</span></a></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'http://doit.cc/2017/09/01/dockerfileCmd/';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+    // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+  })();
+</script>
+
+
+  <script>
+    var qr = new QRious({
+      element: document.getElementById('share-qrcode'),
+      value: document.location.href
+    });
+  </script>
+
+
+
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2019
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+
+  </body>
+</html>
