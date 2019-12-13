@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="Knowledge Of IT">
+  <meta name="keyword" content="hexo-theme, vuejs">
+  
+    <link rel="shortcut icon" type="image/ico" href="css/images/favicon.ico"/>
+  
+  <title>
+    
+      dataTables.bootstrap.js+PageHelper实现后端分页 | Knowledge Of IT
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  
+    <script src="/js/qrious.js"></script>
+  
+  
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+</head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png" />
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>Knowledge Of IT</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">Home</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">Tags</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">Archives</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">Home</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">Tags</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">Archives</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>dataTables.bootstrap.js+PageHelper实现后端分页</h2>
+  <p class="post-date">2015-02-23</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><p>如果是做一些管理系统，分页是最常见的场景，本文指导如何使用前端的dataTables.bootstrap.js插件和后端的PageHelper分页插件实现后端分页。</p>
+<a id="more"></a>
+
+<p>技术栈：</p>
+<ul>
+<li>服务端使用SpringBoot开发</li>
+<li>使用Mybatis作为ORM框架</li>
+<li>使用PageHelper作为后端分页插件</li>
+<li>使用Bootstrap作为前端UI框架</li>
+<li>使用dataTables.bootstrap.js作为前端分页插件</li>
+</ul>
+<p>我们需要实现一个展示用户操作日志的分页列表。</p>
+<h2 id="后端数据实现"><a href="#后端数据实现" class="headerlink" title="后端数据实现"></a>后端数据实现</h2><p>首先，我们实现根据条件全量查询日志列表</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">List&lt;UserLog&gt; <span class="title">listUserLog</span><span class="params">(Integer userId,Integer type)</span></span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> List&lt;UserLog&gt; <span class="title">listUserLog</span><span class="params">(Integer userId,Integer type)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> userLogMapper.selectAll(userId,type);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>PageHelper提供了<code>PageInfo</code>类,但是却与前端所需字段不太符合，所以，我们自己实现一个类``DataTablePageUtil`：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DataTablePageUtil</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/*------------------DT自动请求的参数(Sent parameters) begin--------------------*/</span></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 绘制计数器。这个是用来确保Ajax从服务器返回的是对应的（Ajax是异步的，因此返回的顺序是不确定的）。 要求在服务器接收到此参数后再返回</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> draw; <span class="comment">// 第几次请求</span></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 第一条数据的起始位置，比如0代表第一条数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> start = <span class="number">0</span>;<span class="comment">// 起止位置</span></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 告诉服务器每页显示的条数，这个数字会等于返回的 data集合的记录数，可能会大于因为服务器可能没有那么多数据。</span></span><br><span class="line"><span class="comment">     * 这个也可能是-1，代表需要返回全部数据(尽管这个和服务器处理的理念有点违背)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> length = <span class="number">100</span>; <span class="comment">// 数据长度</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 全局的搜索条件，条件会应用到每一列（ searchable需要设置为 true ）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String search;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 如果为 true代表全局搜索的值是作为正则表达式处理，为 false则不是。</span></span><br><span class="line"><span class="comment">     * 注意：通常在服务器模式下对于大数据不执行这样的正则表达式，但这都是自己决定的</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> is_search;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 告诉后台那些列是需要排序的。 i是一个数组索引，对应的是 columns配置的数组，从0开始</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] order;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 告诉后台列排序的方式， desc 降序 asc升序</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String order_dir;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * columns 绑定的数据源，由 columns.dataOption 定义。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String columns_data;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * columns 的名字，由 columns.nameOption 定义。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String columns_name;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 标记列是否能被搜索,为true代表可以，否则不可以，这个是由 columns.searchableOption 控制</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String columns_searchable;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 标记列是否能排序,为 true代表可以，否则不可以，这个是由 columns.orderableOption 控制</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> is_orderable;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 标记具体列的搜索条件</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String columns_search_value;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 特定列的搜索条件是否视为正则表达式， 如果为 true代表搜索的值是作为正则表达式处理，为 false则不是。</span></span><br><span class="line"><span class="comment">     * 注意：通常在服务器模式下对于大数据不执行这样的正则表达式，但这都是自己决定的</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> is_search_regex;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*------------------DT自动请求的参数(Sent parameters) end--------------------*/</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*------------------服务器需要返回的数据(Returned data) begin--------------------*/</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 必要。上面提到了，Datatables发送的draw是多少那么服务器就返回多少。</span></span><br><span class="line"><span class="comment">     * 这里注意，作者出于安全的考虑，强烈要求把这个转换为整形，即数字后再返回，而不是纯粹的接受然后返回，这是 为了防止跨站脚本（XSS）攻击。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="comment">// private int draw;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 必要。即没有过滤的记录数（数据库里总共记录数）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> recordsTotal;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 必要。过滤后的记录数（如果有接收到前台的过滤条件，则返回的是过滤后的记录数）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> recordsFiltered;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 必要。表中中需要显示的数据。这是一个对象数组，也可以只是数组， 区别在于 纯数组前台就不需要用 columns绑定数据，会自动按照顺序去显示</span></span><br><span class="line"><span class="comment">     * ，而对象数组则需要使用 columns绑定数据才能正常显示。 注意这个 data的名称可以由 ajaxOption 的</span></span><br><span class="line"><span class="comment">     * ajax.dataSrcOption 控制</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;T&gt; data;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 可选。你可以定义一个错误来描述服务器出了问题后的友好提示</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String error;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*-------------可选参数-----------------*/</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 自动绑定到 tr节点上</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String dt_rowId;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 自动把这个类名添加到 tr</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String dt_rowClass;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 使用 jQuery.data() 方法把数据绑定到row中，方便之后用来检索（比如加入一个点击事件）</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Object dt_rowData;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 自动绑定数据到 tr上，使用 jQuery.attr() 方法，对象的键用作属性，值用作属性的值。 注意这个 需要 Datatables</span></span><br><span class="line"><span class="comment">     * 1.10.5+的版本才支持</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Object dt_rowAttr;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*-------------可选参数-----------------*/</span></span><br><span class="line">    <span class="comment">/*------------------服务器需要返回的数据(Returned data) end--------------------*/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 当前页码</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> page_num = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 每页数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> page_size = <span class="number">100</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DataTablePageUtil</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DataTablePageUtil</span><span class="params">(HttpServletRequest request)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//开始的数据行数</span></span><br><span class="line">        String start = request.getParameter(<span class="string">"start"</span>);</span><br><span class="line">        <span class="comment">//每页的数据数</span></span><br><span class="line">        String length = request.getParameter(<span class="string">"length"</span>);</span><br><span class="line">        <span class="comment">//DT传递的draw:</span></span><br><span class="line">        String draw = request.getParameter(<span class="string">"draw"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>.setStart(Integer.parseInt(start));</span><br><span class="line">        <span class="keyword">this</span>.setLength(Integer.parseInt(length));</span><br><span class="line">        <span class="keyword">this</span>.setDraw(Integer.parseInt(draw));</span><br><span class="line">        <span class="comment">//计算页码</span></span><br><span class="line">        <span class="keyword">this</span>.page_num = (Integer.parseInt(start) / Integer.parseInt(length)) + <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DataTablePageUtil</span><span class="params">(<span class="keyword">int</span> draw, <span class="keyword">int</span> start, <span class="keyword">int</span> length, PageInfo pageInfo)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.draw = draw;</span><br><span class="line">        <span class="keyword">this</span>.start = start;</span><br><span class="line">        <span class="keyword">this</span>.length = length;</span><br><span class="line">        <span class="keyword">this</span>.data = pageInfo.getList();</span><br><span class="line">        <span class="keyword">this</span>.page_num = start / length + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">this</span>.page_size = length;</span><br><span class="line">        <span class="keyword">this</span>.recordsTotal = (<span class="keyword">int</span>)pageInfo.getTotal();</span><br><span class="line">        <span class="keyword">this</span>.recordsFiltered = <span class="keyword">this</span>.recordsTotal;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Getter &amp; Setter</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该类核心是这个构造方法,需要把<code>PageInfo</code>的数据重新赋值给<code>DataTablePageUtil</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DataTablePageUtil</span><span class="params">(<span class="keyword">int</span> draw, <span class="keyword">int</span> start, <span class="keyword">int</span> length, PageInfo pageInfo)</span></span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.draw = draw;</span><br><span class="line">    <span class="keyword">this</span>.start = start;</span><br><span class="line">    <span class="keyword">this</span>.length = length;</span><br><span class="line">    <span class="keyword">this</span>.data = pageInfo.getList();</span><br><span class="line">    <span class="keyword">this</span>.page_num = start / length + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">this</span>.page_size = length;</span><br><span class="line">    <span class="keyword">this</span>.recordsTotal = (<span class="keyword">int</span>)pageInfo.getTotal();</span><br><span class="line">    <span class="keyword">this</span>.recordsFiltered = <span class="keyword">this</span>.recordsTotal;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Controller的实现:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/user/list"</span>,method = RequestMethod.POST)</span><br><span class="line">    <span class="meta">@ResponseBody</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DataTablePageUtil&lt;UserLog&gt; <span class="title">userOperateLogList</span><span class="params">(@RequestParam(required = <span class="keyword">false</span>,defaultValue = <span class="string">"1"</span>)</span> <span class="keyword">int</span> draw,</span></span><br><span class="line"><span class="function">                                                         @<span class="title">RequestParam</span><span class="params">(required = <span class="keyword">false</span>,defaultValue = <span class="string">"0"</span>)</span> <span class="keyword">int</span> start,</span></span><br><span class="line"><span class="function">                                                         @<span class="title">RequestParam</span><span class="params">(required = <span class="keyword">false</span>,defaultValue = <span class="string">"10"</span>)</span> <span class="keyword">int</span> length,</span></span><br><span class="line"><span class="function">                                                         @<span class="title">RequestParam</span><span class="params">(required = <span class="keyword">false</span>,defaultValue = <span class="string">"0"</span>)</span> Integer userId,</span></span><br><span class="line"><span class="function">                                                         @<span class="title">RequestParam</span><span class="params">(required = <span class="keyword">false</span>,defaultValue = <span class="string">"0"</span>)</span> Integer type)</span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(userId == <span class="number">0</span>)&#123;</span><br><span class="line">            userId = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(type == <span class="number">0</span>)&#123;</span><br><span class="line">            type = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        PageHelper.startPage(start, length);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> DataTablePageUtil&lt;&gt;(draw,start,length,<span class="keyword">new</span> PageInfo&lt;&gt;(logService.listUserLog(userId,type),length));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>当我们请求<code>/admin/log/user/list</code>的时候，获取到的数据：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"draw"</span>:<span class="number">1</span>,</span><br><span class="line">    <span class="attr">"start"</span>:<span class="number">0</span>,</span><br><span class="line">    <span class="attr">"length"</span>:<span class="number">10</span>,</span><br><span class="line">    <span class="attr">"search"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"is_search"</span>:<span class="literal">false</span>,</span><br><span class="line">    <span class="attr">"order"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"order_dir"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"columns_data"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"columns_name"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"columns_searchable"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"is_orderable"</span>:<span class="literal">false</span>,</span><br><span class="line">    <span class="attr">"columns_search_value"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"is_search_regex"</span>:<span class="literal">false</span>,</span><br><span class="line">    <span class="attr">"recordsTotal"</span>:<span class="number">42</span>,</span><br><span class="line">    <span class="attr">"recordsFiltered"</span>:<span class="number">42</span>,</span><br><span class="line">    <span class="attr">"data"</span>:[</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"id"</span>:<span class="number">43</span>,</span><br><span class="line">            <span class="attr">"userId"</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">"userDisplayName"</span>:<span class="string">"FunGa黄佳"</span>,</span><br><span class="line">            <span class="attr">"operateType"</span>:<span class="number">6</span>,</span><br><span class="line">            <span class="attr">"remark"</span>:<span class="string">"上传文件：http://7xq0ls.com1.z0.glb.clouddn.com/FvponGiCwOeQ7qfZGrh7brYMGHj3"</span>,</span><br><span class="line">            <span class="attr">"logTime"</span>:<span class="string">"2018-09-10T02:44:22.000+0000"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"id"</span>:<span class="number">42</span>,</span><br><span class="line">            <span class="attr">"userId"</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">"userDisplayName"</span>:<span class="string">"FunGa黄佳"</span>,</span><br><span class="line">            <span class="attr">"operateType"</span>:<span class="number">2</span>,</span><br><span class="line">            <span class="attr">"remark"</span>:<span class="string">"新建文章:Myabtis批量插入返回自增主键"</span>,</span><br><span class="line">            <span class="attr">"logTime"</span>:<span class="string">"2018-09-08T10:16:14.000+0000"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"id"</span>:<span class="number">41</span>,</span><br><span class="line">            <span class="attr">"userId"</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">"userDisplayName"</span>:<span class="string">"FunGa黄佳"</span>,</span><br><span class="line">            <span class="attr">"operateType"</span>:<span class="number">6</span>,</span><br><span class="line">            <span class="attr">"remark"</span>:<span class="string">"上传文件：http://7xq0ls.com1.z0.glb.clouddn.com/Fv22YIygUx-MEuPVSUUCeAOD1YaG"</span>,</span><br><span class="line">            <span class="attr">"logTime"</span>:<span class="string">"2018-09-08T09:56:35.000+0000"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"id"</span>:<span class="number">40</span>,</span><br><span class="line">            <span class="attr">"userId"</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">"userDisplayName"</span>:<span class="string">"FunGa黄佳"</span>,</span><br><span class="line">            <span class="attr">"operateType"</span>:<span class="number">2</span>,</span><br><span class="line">            <span class="attr">"remark"</span>:<span class="string">"新建文章:为什么需要泛型？"</span>,</span><br><span class="line">            <span class="attr">"logTime"</span>:<span class="string">"2018-09-08T06:20:53.000+0000"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"id"</span>:<span class="number">39</span>,</span><br><span class="line">            <span class="attr">"userId"</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">"userDisplayName"</span>:<span class="string">"FunGa黄佳"</span>,</span><br><span class="line">            <span class="attr">"operateType"</span>:<span class="number">6</span>,</span><br><span class="line">            <span class="attr">"remark"</span>:<span class="string">"上传文件：http://7xq0ls.com1.z0.glb.clouddn.com/FlG--a1GubDWL3ghKzYlHxVJ3S4j"</span>,</span><br><span class="line">            <span class="attr">"logTime"</span>:<span class="string">"2018-09-08T06:03:00.000+0000"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"id"</span>:<span class="number">38</span>,</span><br><span class="line">            <span class="attr">"userId"</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">"userDisplayName"</span>:<span class="string">"FunGa黄佳"</span>,</span><br><span class="line">            <span class="attr">"operateType"</span>:<span class="number">2</span>,</span><br><span class="line">            <span class="attr">"remark"</span>:<span class="string">"新建文章:SpringBoot实现注解对请求进行权限验证"</span>,</span><br><span class="line">            <span class="attr">"logTime"</span>:<span class="string">"2018-09-07T13:05:42.000+0000"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"id"</span>:<span class="number">37</span>,</span><br><span class="line">            <span class="attr">"userId"</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">"userDisplayName"</span>:<span class="string">"FunGa黄佳"</span>,</span><br><span class="line">            <span class="attr">"operateType"</span>:<span class="number">6</span>,</span><br><span class="line">            <span class="attr">"remark"</span>:<span class="string">"上传文件：http://7xq0ls.com1.z0.glb.clouddn.com/FtoXMR8I_F79a5-VtYS08U91tV99"</span>,</span><br><span class="line">            <span class="attr">"logTime"</span>:<span class="string">"2018-09-07T12:57:05.000+0000"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"id"</span>:<span class="number">36</span>,</span><br><span class="line">            <span class="attr">"userId"</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">"userDisplayName"</span>:<span class="string">"FunGa黄佳"</span>,</span><br><span class="line">            <span class="attr">"operateType"</span>:<span class="number">3</span>,</span><br><span class="line">            <span class="attr">"remark"</span>:<span class="string">"编辑专题：搞定面试，内容：面试题其实有时候很恶心的，因为如果不是有所准备，真的可能答不上来，或者说一个资深的老程序员也未必答得上来，但是如果能答上来，那必然是加分的呀。"</span>,</span><br><span class="line">            <span class="attr">"logTime"</span>:<span class="string">"2018-09-07T12:42:48.000+0000"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"id"</span>:<span class="number">35</span>,</span><br><span class="line">            <span class="attr">"userId"</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">"userDisplayName"</span>:<span class="string">"FunGa黄佳"</span>,</span><br><span class="line">            <span class="attr">"operateType"</span>:<span class="number">3</span>,</span><br><span class="line">            <span class="attr">"remark"</span>:<span class="string">"创建专题：搞定面试，内容：面试题其实有时候很恶习的，因为如果不是有所准备，真的可能答不上来，或者说一个资深的老程序员也未必答得上来，但是如果能答上来，那必然是加分的呀。"</span>,</span><br><span class="line">            <span class="attr">"logTime"</span>:<span class="string">"2018-09-07T12:41:36.000+0000"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"id"</span>:<span class="number">34</span>,</span><br><span class="line">            <span class="attr">"userId"</span>:<span class="number">1</span>,</span><br><span class="line">            <span class="attr">"userDisplayName"</span>:<span class="string">"FunGa黄佳"</span>,</span><br><span class="line">            <span class="attr">"operateType"</span>:<span class="number">6</span>,</span><br><span class="line">            <span class="attr">"remark"</span>:<span class="string">"上传文件：http://7xq0ls.com1.z0.glb.clouddn.com/FutQ0kGzuwmKPLtWWzPo_RXx6r1n"</span>,</span><br><span class="line">            <span class="attr">"logTime"</span>:<span class="string">"2018-09-07T12:39:16.000+0000"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"error"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"dt_rowId"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"dt_rowClass"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"dt_rowData"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"dt_rowAttr"</span>:<span class="literal">null</span>,</span><br><span class="line">    <span class="attr">"page_num"</span>:<span class="number">1</span>,</span><br><span class="line">    <span class="attr">"page_size"</span>:<span class="number">10</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="前端分页"><a href="#前端分页" class="headerlink" title="前端分页"></a>前端分页</h2><p>展示页面和查询条件:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"box"</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"box-header with-border"</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">h3</span> <span class="attr">class</span>=<span class="string">"box-title"</span>&gt;</span><span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">form</span> <span class="attr">class</span>=<span class="string">"form-inline pull-right"</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"box-body"</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"form-group"</span>&gt;</span></span><br><span class="line">                            <span class="tag">&lt;<span class="name">label</span> <span class="attr">for</span>=<span class="string">"user-id"</span> <span class="attr">class</span>=<span class="string">"control-label"</span>&gt;</span>操作人：<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">                                <span class="tag">&lt;<span class="name">select</span> <span class="attr">class</span>=<span class="string">"form-control"</span> <span class="attr">id</span>=<span class="string">"user-id"</span> <span class="attr">style</span>=<span class="string">"width:160px"</span> <span class="attr">onchange</span>=<span class="string">"redraw()"</span>&gt;</span></span><br><span class="line">                                    <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">"0"</span>&gt;</span>请选择...<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">                                    <span class="tag">&lt;<span class="name">option</span> <span class="attr">th:each</span>=<span class="string">"user,userStat : $&#123;userList&#125;"</span> <span class="attr">th:value</span>=<span class="string">"$&#123;user.id&#125;"</span> <span class="attr">th:text</span>=<span class="string">"$&#123;user.displayName&#125;"</span>&gt;</span><span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">                                <span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">                        &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;</span><br><span class="line">                        <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"form-group"</span>&gt;</span></span><br><span class="line">                            <span class="tag">&lt;<span class="name">label</span> <span class="attr">for</span>=<span class="string">"type"</span> <span class="attr">class</span>=<span class="string">"control-label"</span>&gt;</span>操作类型：<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">                                <span class="tag">&lt;<span class="name">select</span> <span class="attr">class</span>=<span class="string">"form-control"</span> <span class="attr">id</span>=<span class="string">"type"</span> <span class="attr">style</span>=<span class="string">"width:160px"</span> <span class="attr">onchange</span>=<span class="string">"redraw()"</span>&gt;</span></span><br><span class="line">                                    <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">"0"</span>&gt;</span>请选择...<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">                                    <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">"1"</span>&gt;</span>操作用户<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">                                    <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">"2"</span>&gt;</span>操作文章<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">                                    <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">"3"</span>&gt;</span>操作专题<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">                                    <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">"4"</span>&gt;</span>操作课程<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">                                    <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">"5"</span>&gt;</span>操作评论<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">                                    <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">"6"</span>&gt;</span>操作图片<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">                                    <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span>=<span class="string">"7"</span>&gt;</span>作者回复<span class="tag">&lt;/<span class="name">option</span>&gt;</span></span><br><span class="line">                                <span class="tag">&lt;/<span class="name">select</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"></span><br><span class="line">                <span class="comment">&lt;!-- /.box-header --&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"box-body"</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">table</span> <span class="attr">width</span>=<span class="string">"100%"</span> <span class="attr">id</span>=<span class="string">"user-log-table"</span> <span class="attr">class</span>=<span class="string">"table table-bordered"</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">thead</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">                            <span class="tag">&lt;<span class="name">th</span> <span class="attr">style</span>=<span class="string">"width: 10px"</span>&gt;</span>#<span class="tag">&lt;/<span class="name">th</span>&gt;</span></span><br><span class="line">                            <span class="tag">&lt;<span class="name">th</span> <span class="attr">style</span>=<span class="string">"width: 60px"</span>&gt;</span>操作人<span class="tag">&lt;/<span class="name">th</span>&gt;</span></span><br><span class="line">                            <span class="tag">&lt;<span class="name">th</span> <span class="attr">style</span>=<span class="string">"width: 60px"</span>&gt;</span>操作类型<span class="tag">&lt;/<span class="name">th</span>&gt;</span></span><br><span class="line">                            <span class="tag">&lt;<span class="name">th</span> <span class="attr">style</span>=<span class="string">"width: 240px"</span>&gt;</span>操作内容<span class="tag">&lt;/<span class="name">th</span>&gt;</span></span><br><span class="line">                            <span class="tag">&lt;<span class="name">th</span> <span class="attr">style</span>=<span class="string">"width: 120px"</span>&gt;</span>时间<span class="tag">&lt;/<span class="name">th</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;/<span class="name">thead</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">tbody</span>&gt;</span></span><br><span class="line"></span><br><span class="line">                        <span class="tag">&lt;/<span class="name">tbody</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">table</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">                <span class="comment">&lt;!-- /.box-body --&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>我们定义了一个数据table，和一个简单的数据过滤form表单。</p>
+<p>jquery生成分页：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> dt;</span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">  $(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">      drawTable();</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">drawTable</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      dt = $(<span class="string">'#user-log-table'</span>).DataTable( &#123;</span><br><span class="line">          processing: <span class="literal">true</span>,</span><br><span class="line">          serverSide: <span class="literal">true</span>,</span><br><span class="line">          lengthChange: <span class="literal">false</span>,<span class="comment">//是否允许用户改变表格每页显示的记录数</span></span><br><span class="line">          ordering: <span class="literal">false</span>,<span class="comment">//是否允许用户排序</span></span><br><span class="line">          paging: <span class="literal">true</span>,<span class="comment">//是否分页</span></span><br><span class="line">          <span class="keyword">async</span>: <span class="literal">false</span>,</span><br><span class="line">          pagingType: <span class="string">"full_numbers"</span>,<span class="comment">//除首页、上一页、下一页、末页四个按钮还有页数按钮</span></span><br><span class="line">        <span class="comment">/* scrollX: true,//允许水平滚动</span></span><br><span class="line"><span class="comment">         scrollY: "200px",</span></span><br><span class="line"><span class="comment">         scrollCollapse: true, */</span></span><br><span class="line">          searching: <span class="literal">false</span>,<span class="comment">//是否开始本地搜索</span></span><br><span class="line">          stateSave: <span class="literal">false</span>,<span class="comment">//刷新时是否保存状态</span></span><br><span class="line">          autoWidth: <span class="literal">true</span>,<span class="comment">//自动计算宽度</span></span><br><span class="line">          <span class="comment">//deferRender : true,//延迟渲染</span></span><br><span class="line">          language: &#123;</span><br><span class="line">              <span class="string">"lengthMenu"</span>: <span class="string">"每页 _MENU_ 条记录"</span>,</span><br><span class="line">              <span class="string">"zeroRecords"</span>: <span class="string">" "</span>,</span><br><span class="line">              <span class="string">"info"</span>: <span class="string">"当前 _START_ 条到 _END_ 条 共 _TOTAL_ 条"</span>,</span><br><span class="line">              <span class="string">"infoEmpty"</span>: <span class="string">"无记录"</span>,</span><br><span class="line">              <span class="string">"infoFiltered"</span>: <span class="string">"(从 _MAX_ 条记录过滤)"</span>,</span><br><span class="line">              <span class="comment">// "search": "用户",</span></span><br><span class="line">              <span class="comment">// "processing": "载入中",</span></span><br><span class="line">              <span class="string">"paginate"</span>: &#123;</span><br><span class="line">                  <span class="string">"first"</span>: <span class="string">"首页"</span>,</span><br><span class="line">                  <span class="string">"previous"</span>: <span class="string">"上一页"</span>,</span><br><span class="line">                  <span class="string">"next"</span>: <span class="string">"下一页"</span>,</span><br><span class="line">                  <span class="string">"last"</span>: <span class="string">"尾页"</span></span><br><span class="line">              &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          fnDrawCallback: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">              <span class="keyword">var</span> api = <span class="keyword">this</span>.api();</span><br><span class="line">              <span class="keyword">var</span> startIndex = api.context[<span class="number">0</span>]._iDisplayStart;</span><br><span class="line">              api.column(<span class="number">0</span>).nodes().each(<span class="function"><span class="keyword">function</span>(<span class="params">cell, i</span>) </span>&#123;</span><br><span class="line">                  cell.innerHTML = startIndex + i + <span class="number">1</span>;</span><br><span class="line">              &#125;);</span><br><span class="line">          &#125;,</span><br><span class="line">          ajax: &#123;</span><br><span class="line">              url: <span class="string">'/admin/log/user/list'</span>,</span><br><span class="line">              type: <span class="string">'POST'</span>,</span><br><span class="line">              data:&#123;<span class="attr">userId</span>:$(<span class="string">'#user-id'</span>).val(),<span class="attr">type</span>:$(<span class="string">'#type'</span>).val()&#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          columns: [</span><br><span class="line">              &#123;</span><br><span class="line">                  data: <span class="literal">null</span></span><br><span class="line">              &#125;,</span><br><span class="line">              &#123;</span><br><span class="line">                  data: <span class="string">"userDisplayName"</span></span><br><span class="line">              &#125;,</span><br><span class="line">              &#123;</span><br><span class="line">                  data: <span class="string">"operateType"</span>,</span><br><span class="line">                  render : <span class="function"><span class="keyword">function</span> (<span class="params">data</span>) </span>&#123;</span><br><span class="line">                      <span class="keyword">switch</span> (data)&#123;</span><br><span class="line">                          <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">                              <span class="keyword">return</span> <span class="string">"操作用户"</span>;</span><br><span class="line">                          <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">                              <span class="keyword">return</span> <span class="string">"操作文章"</span>;</span><br><span class="line">                          <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">                              <span class="keyword">return</span> <span class="string">"操作专题"</span>;</span><br><span class="line">                          <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">                              <span class="keyword">return</span> <span class="string">"操作课程"</span>;</span><br><span class="line">                          <span class="keyword">case</span> <span class="number">5</span>:</span><br><span class="line">                              <span class="keyword">return</span> <span class="string">"操作评论"</span>;</span><br><span class="line">                          <span class="keyword">case</span> <span class="number">6</span>:</span><br><span class="line">                              <span class="keyword">return</span> <span class="string">"操作文件"</span>;</span><br><span class="line">                          <span class="keyword">case</span> <span class="number">7</span>:</span><br><span class="line">                              <span class="keyword">return</span> <span class="string">"作者回复"</span>;</span><br><span class="line">                          <span class="keyword">default</span>:</span><br><span class="line">                              <span class="keyword">return</span> <span class="string">"未知类型"</span>;</span><br><span class="line">                      &#125;</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;,</span><br><span class="line">              &#123;<span class="attr">data</span>: <span class="string">"remark"</span>&#125;,</span><br><span class="line">              &#123;</span><br><span class="line">                  data: <span class="string">"logTime"</span>,</span><br><span class="line">                  render: <span class="function"><span class="keyword">function</span> (<span class="params">data</span>) </span>&#123;</span><br><span class="line">                      <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Date</span>(data).Format(<span class="string">"yyyy-MM-dd hh:mm:ss"</span>);</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">          ]</span><br><span class="line">      &#125; );</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">redraw</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span>(dt)&#123;</span><br><span class="line">          dt.clear();</span><br><span class="line">          dt.destroy();</span><br><span class="line">      &#125;</span><br><span class="line">      drawTable();</span><br><span class="line">  &#125;</span><br><span class="line">&lt;<span class="regexp">/script&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>当页面加载的时候，按照默认的参数请求接口获取分页数据。当选择了条件，把原先分页销毁，重新带参数请求接口生成新的分页对象。</p>
+</section>
+    <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#PageHelper" >
+    <span class="tag-code">PageHelper</span>
+  </a>
+
+      </div>
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/2015/01/11/formSubmitRepeat/">
+        <span class="nav-arrow">← </span>
+        
+          谈谈如何防止表单重复提交
+        
+      </a>
+    
+    
+      <a class="nav-right" href="/2016/01/20/velocityPdf/">
+        
+          使用Velocity模板作为导出PDF的模板
+        
+        <span class="nav-arrow"> →</span>
+      </a>
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+      <div class="money-like">
+        <div class="reward-btn">
+          赏
+          <span class="money-code">
+            <span class="alipay-code">
+              <div class="code-image"></div>
+              <b>使用支付宝打赏</b>
+            </span>
+            <span class="wechat-code">
+              <div class="code-image"></div>
+              <b>使用微信打赏</b>
+            </span>
+          </span>
+        </div>
+        <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
+      </div>
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+      <div class="qrcode">
+        <canvas id="share-qrcode"></canvas>
+        <p class="notice">扫描二维码，分享此文章</p>
+      </div>
+    
+    <!-- 二维码 END -->
+    
+      <!-- UY START -->
+      <style>
+        /* 畅言去广告 */
+        #​feedAv {
+          position: absolute;!important;
+          height: 0px !important;
+          transform: scale(0) !important;
+        }
+
+        #pop_ad {
+          transform: scale(0) !important;
+        }​
+      </style>
+      <div id="SOHUCS" ></div>
+      <script charset="utf-8" type="text/javascript" src="https://koit.oss-cn-beijing.aliyuncs.com/static/js/changyan.js" ></script>
+      <script type="text/javascript">
+        window.changyan.api.config({
+          appid: 'cyuvdPSsX',
+          conf: 'prod_0cc244e175e0eb2a4ecb53a5bb07ccd3'
+        });
+      </script>​
+      <!-- UY END -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#后端数据实现"><span class="toc-nav-text">后端数据实现</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#前端分页"><span class="toc-nav-text">前端分页</span></a></li></ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'http://doit.cc/2015/02/23/serverPager/';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+    // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+  })();
+</script>
+
+
+  <script>
+    var qr = new QRious({
+      element: document.getElementById('share-qrcode'),
+      value: document.location.href
+    });
+  </script>
+
+
+
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2019
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+
+  </body>
+</html>
