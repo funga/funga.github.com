@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+  <meta name="description" content="Knowledge Of IT">
+  <meta name="keyword" content="hexo-theme, vuejs">
+  
+    <link rel="shortcut icon" type="image/ico" href="css/images/favicon.ico"/>
+  
+  <title>
+    
+      如何绕过CAS实现开放接口 | Knowledge Of IT
+    
+  </title>
+  <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" rel="stylesheet">
+  <link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/tomorrow.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/geopattern/1.2.3/js/geopattern.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+  
+    <script src="/js/qrious.js"></script>
+  
+  
+  
+  
+    <!-- MathJax support START -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <!-- MathJax support END -->
+  
+
+
+</head>
+<div class="wechat-share">
+  <img src="/css/images/logo.png" />
+</div>
+
+  <body>
+    <header class="header fixed-header">
+  <div class="header-container">
+    <a class="home-link" href="/">
+      <div class="logo"></div>
+      <span>Knowledge Of IT</span>
+    </a>
+    <ul class="right-list">
+      
+        <li class="list-item">
+          
+            <a href="/" class="item-link">Home</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/tags/" class="item-link">Tags</a>
+          
+        </li>
+      
+        <li class="list-item">
+          
+            <a href="/archives/" class="item-link">Archives</a>
+          
+        </li>
+      
+    </ul>
+    <div class="menu">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </div>
+    <div class="menu-mask">
+      <ul class="menu-list">
+        
+          <li class="menu-item">
+            
+              <a href="/" class="menu-link">Home</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/tags/" class="menu-link">Tags</a>
+            
+          </li>
+        
+          <li class="menu-item">
+            
+              <a href="/archives/" class="menu-link">Archives</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</header>
+
+    <div id="article-banner">
+  <h2>如何绕过CAS实现开放接口</h2>
+  <p class="post-date">2014-07-14</p>
+  <div class="arrow-down">
+    <a href="javascript:;"></a>
+  </div>
+</div>
+<main class="app-body flex-box">
+  <!-- Article START -->
+  <article class="post-article">
+    <section class="markdown-content"><blockquote>
+<p>系统使用的CAS单点登陆，现在需要开放接口给外部系统调用，直接调用肯定是走不过去，所以下面给我我实现的方式。</p>
+</blockquote>
+<a id="more"></a>
+<p>因为所有的请求都会被CAS拦截，所以我们在CAS拦截器前面先配置一个Filter。拦截所有/api/*的请求，这要求我们所有开放的接口都是/api格式的。<br>/api/serviceName/methodName,uri拼装方式是api+服务名称+方法名称，我们通过反射的方式获取服务，获取到名称。比如请求/api/user/getUser,那么我们通过反射会执行UserServiceWrapper下的getUser()方法。<br>实现一个开放接口只要实现一个类XxxxServiceWrapper即可。<br>下面我们来实现这个Filter：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doFilter</span><span class="params">(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)</span> <span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line">    HttpServletRequest request = (HttpServletRequest) servletRequest;</span><br><span class="line">    HttpServletResponse response = (HttpServletResponse) servletResponse;</span><br><span class="line">    <span class="comment">// 请求方式</span></span><br><span class="line">    String method = request.getMethod();</span><br><span class="line">    <span class="keyword">if</span>(!<span class="string">"POST"</span>.equals(method))&#123;</span><br><span class="line">        end(response, RestResult.error(RestResult.CODE_ILLEGAL_REQUEST_METHOD, <span class="string">"请使用POST方式提交请求"</span>));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 获取加密的请求参数</span></span><br><span class="line">    String data = request.getParameter(<span class="string">"data"</span>);</span><br><span class="line">    <span class="keyword">if</span> (StringUtils.isEmpty(data)) &#123;</span><br><span class="line">        end(response, RestResult.error(RestResult.CODE_PARAM_MISS, <span class="string">"请求参数为空"</span>));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 获取解密后的请求参数</span></span><br><span class="line">    String param = Base64Utils.decrypt(data);</span><br><span class="line">    <span class="comment">// 签名校验</span></span><br><span class="line">    JSONObject paramJson = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        paramJson = JSONObject.parseObject(param);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        end(response, RestResult.error(RestResult.CODE_PARAM_ERROR, <span class="string">"参数解析格式错误"</span>));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// TODO 签名校验</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 验证通过执行方法</span></span><br><span class="line">    String uri = request.getRequestURI();</span><br><span class="line">    String[] uriArray = uri.split(<span class="string">"/"</span>);</span><br><span class="line">    <span class="keyword">int</span> length = uriArray.length;</span><br><span class="line">    <span class="keyword">if</span> (length &lt; <span class="number">4</span>) &#123;</span><br><span class="line">        end(response, RestResult.error(RestResult.CODE_SERVICE_NOT_FOUND, <span class="string">"请求服务不存在"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">    String serviceName = uriArray[<span class="number">2</span>];</span><br><span class="line">    String methodName = uriArray[<span class="number">3</span>];</span><br><span class="line">    end(response, X5Util.execute(serviceName, methodName, bodyJson));</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">end</span><span class="params">(HttpServletResponse response, String result)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    response.setStatus(HttpStatus.OK.value());</span><br><span class="line">    response.setContentType(MediaType.APPLICATION_JSON_VALUE);</span><br><span class="line">    response.setCharacterEncoding(<span class="string">"UTF-8"</span>);</span><br><span class="line">    response.setHeader(<span class="string">"Cache-Control"</span>, <span class="string">"no-cache,must-revalidate"</span>);</span><br><span class="line">    logger.info(result);</span><br><span class="line">    response.getWriter().write(result);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们在拦截器里面干了几件事情：</p>
+<ul>
+<li>接口请求方式校验</li>
+<li>接口参数校验，参数格式校验，签名校验</li>
+<li>通过校验利用反射执行</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">checkSign</span><span class="params">(String appid, String body, String sign)</span> </span>&#123;</span><br><span class="line">    String key = globalConfig.getAccessAppKeyMap().get(appid);</span><br><span class="line">    String localSign = MD5Util.MD5(appid + body + key);</span><br><span class="line">    <span class="keyword">return</span> sign.equalsIgnoreCase(localSign);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">execute</span><span class="params">(String serviceName, String methodName, JSONObject param)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    String serviceBeanName = serviceName + <span class="string">"ServiceWrapper"</span>;</span><br><span class="line">    ApplicationContext context = SpringContextUtil.getApplicationContext();</span><br><span class="line">    Object serviceInstance = SpringContextUtil.getBean(serviceBeanName);<span class="comment">//从spring容器中查找需要的实例bean</span></span><br><span class="line">    <span class="keyword">if</span> (serviceInstance == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> RestResult.error(RestResult.CODE_SERVICE_NOT_FOUND, <span class="string">"未知的请求服务"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    Method method = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        method = serviceInstance.getClass().getMethod(methodName, String.class);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NoSuchMethodException e) &#123;</span><br><span class="line">        <span class="keyword">return</span> RestResult.error(RestResult.CODE_SERVICE_NOT_FOUND, <span class="string">"未知的请求服务"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Object result = method.invoke(serviceInstance, param.toString());</span><br><span class="line">        <span class="keyword">return</span> RestResult.success(result);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">        logger.info(<span class="string">"API接口请求处理异常.请求服务:"</span> + serviceName + <span class="string">",请求方法:"</span> + methodName + <span class="string">",请求参数:"</span> + param.toString()+<span class="string">",异常信息:"</span>+e.getCause().getMessage());</span><br><span class="line">        <span class="keyword">if</span>(e.getCause() <span class="keyword">instanceof</span> ServiceException)&#123;</span><br><span class="line">            <span class="keyword">return</span> RestResult.error(RestResult.CODE_CLIENT_ERROE, e.getCause().getMessage());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> RestResult.error(RestResult.CODE_SYS_ERROE, <span class="string">"请求处理失败"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所有/api/*接口会被拦截并且处理，如果有正确的返回结果则返回，如果校验错误等，会返回提示信息，并且是JSON格式。</p>
+</section>
+    <!-- Tags START -->
+    
+      <div class="tags">
+        <span>Tags:</span>
+        
+  <a href="/tags#CAS" >
+    <span class="tag-code">CAS</span>
+  </a>
+
+      </div>
+    
+    <!-- Tags END -->
+    <!-- NAV START -->
+    
+  <div class="nav-container">
+    <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/2014/05/14/mybatisBatch/">
+        <span class="nav-arrow">← </span>
+        
+          Mybatis批量新增和编辑
+        
+      </a>
+    
+    
+      <a class="nav-right" href="/2014/08/11/springIocBean/">
+        
+          如何通过对象名称获取Spring管理的对象
+        
+        <span class="nav-arrow"> →</span>
+      </a>
+    
+  </div>
+
+    <!-- NAV END -->
+    <!-- 打赏 START -->
+    
+      <div class="money-like">
+        <div class="reward-btn">
+          赏
+          <span class="money-code">
+            <span class="alipay-code">
+              <div class="code-image"></div>
+              <b>使用支付宝打赏</b>
+            </span>
+            <span class="wechat-code">
+              <div class="code-image"></div>
+              <b>使用微信打赏</b>
+            </span>
+          </span>
+        </div>
+        <p class="notice">若你觉得我的文章对你有帮助，欢迎点击上方按钮对我打赏</p>
+      </div>
+    
+    <!-- 打赏 END -->
+    <!-- 二维码 START -->
+    
+      <div class="qrcode">
+        <canvas id="share-qrcode"></canvas>
+        <p class="notice">扫描二维码，分享此文章</p>
+      </div>
+    
+    <!-- 二维码 END -->
+    
+      <!-- UY START -->
+      <style>
+        /* 畅言去广告 */
+        #​feedAv {
+          position: absolute;!important;
+          height: 0px !important;
+          transform: scale(0) !important;
+        }
+
+        #pop_ad {
+          transform: scale(0) !important;
+        }​
+      </style>
+      <div id="SOHUCS" ></div>
+      <script charset="utf-8" type="text/javascript" src="https://koit.oss-cn-beijing.aliyuncs.com/static/js/changyan.js" ></script>
+      <script type="text/javascript">
+        window.changyan.api.config({
+          appid: 'cyuvdPSsX',
+          conf: 'prod_0cc244e175e0eb2a4ecb53a5bb07ccd3'
+        });
+      </script>​
+      <!-- UY END -->
+    
+  </article>
+  <!-- Article END -->
+  <!-- Catalog START -->
+  
+    <aside class="catalog-container">
+  <div class="toc-main">
+    <strong class="toc-title">Catalog</strong>
+    
+      <ol class="nav">none</ol>
+    
+  </div>
+</aside>
+  
+  <!-- Catalog END -->
+</main>
+
+<script>
+  (function () {
+    var url = 'http://doit.cc/2014/07/14/skipCas/';
+    var banner = ''
+    if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
+      $('#article-banner').css({
+        'background-image': 'url(' + banner + ')'
+      })
+    } else {
+      $('#article-banner').geopattern(url)
+    }
+    $('.header').removeClass('fixed-header')
+
+    // error image
+    $(".markdown-content img").on('error', function() {
+      $(this).attr('src', 'http://file.muyutech.com/error-img.png')
+      $(this).css({
+        'cursor': 'default'
+      })
+    })
+
+    // zoom image
+    $(".markdown-content img").on('click', function() {
+      var src = $(this).attr('src')
+      if (src !== 'http://file.muyutech.com/error-img.png') {
+        var imageW = $(this).width()
+        var imageH = $(this).height()
+
+        var zoom = ($(window).width() * 0.95 / imageW).toFixed(2)
+        zoom = zoom < 1 ? 1 : zoom
+        zoom = zoom > 2 ? 2 : zoom
+        var transY = (($(window).height() - imageH) / 2).toFixed(2)
+
+        $('body').append('<div class="image-view-wrap"><div class="image-view-inner"><img src="'+ src +'" /></div></div>')
+        $('.image-view-wrap').addClass('wrap-active')
+        $('.image-view-wrap img').css({
+          'width': `${imageW}`,
+          'transform': `translate3d(0, ${transY}px, 0) scale3d(${zoom}, ${zoom}, 1)`
+        })
+        $('html').css('overflow', 'hidden')
+
+        $('.image-view-wrap').on('click', function() {
+          $(this).remove()
+          $('html').attr('style', '')
+        })
+      }
+    })
+  })();
+</script>
+
+
+  <script>
+    var qr = new QRious({
+      element: document.getElementById('share-qrcode'),
+      value: document.location.href
+    });
+  </script>
+
+
+
+
+
+
+    <div class="scroll-top">
+  <span class="arrow-icon"></span>
+</div>
+    <footer class="app-footer">
+  <p class="copyright">
+    &copy; 2019
+  </p>
+</footer>
+
+<script>
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+</script>
+<script>
+  async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+    FastClick.attach(document.body);
+  })
+</script>
+
+<script>
+  var hasLine = 'true';
+  async("//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js", function(){
+    $('figure pre').each(function(i, block) {
+      var figure = $(this).parents('figure');
+      if (hasLine === 'false') {
+        figure.find('.gutter').hide();
+      }
+      var lang = figure.attr('class').split(' ')[1] || 'code';
+      var codeHtml = $(this).html();
+      var codeTag = document.createElement('code');
+      codeTag.className = lang;
+      codeTag.innerHTML = codeHtml;
+      $(this).attr('class', '').empty().html(codeTag);
+      figure.attr('data-lang', lang.toUpperCase());
+      hljs.highlightBlock(block);
+    });
+  })
+</script>
+<!-- Baidu Tongji -->
+
+<script src="/js/script.js"></script>
+
+  </body>
+</html>
