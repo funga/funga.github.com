@@ -10,7 +10,7 @@
   
   <title>
     
-      我们是不是低估了企业应用的研发？ | Knowledge Of IT
+      谈谈如何防止表单重复提交 | Knowledge Of IT
     
   </title>
   <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -116,8 +116,8 @@
 </header>
 
     <div id="article-banner">
-  <h2>我们是不是低估了企业应用的研发？</h2>
-  <p class="post-date">2019-06-01</p>
+  <h2>谈谈如何防止表单重复提交</h2>
+  <p class="post-date">2015-01-11</p>
   <div class="arrow-down">
     <a href="javascript:;"></a>
   </div>
@@ -125,48 +125,38 @@
 <main class="app-body flex-box">
   <!-- Article START -->
   <article class="post-article">
-    <section class="markdown-content"><p>信息化办公系统为企业运营提效、赋能。但，对于大多数企业而言，这系列系统并非必须的。传统企业对这块要求不高，互联网创业公司朝不保夕更无法统筹建设。实际情况是企业中的员工都会吐槽公司的这个那个系统，这个功能设计有问题，那个功能不人性，这个体验差，那个需求竟然不支持。那这样的结果到底是什么原因导致的呢？</p>
-<h2 id="需求是什么？"><a href="#需求是什么？" class="headerlink" title="需求是什么？"></a>需求是什么？</h2><p>做产品最难的就是没人提需求，这些都需要自己去琢磨，比如很多ToC的产品。更难的是提需求的人太多，企业应用说白了用户就是企业员工，甚至包含很多领导。每个人的想法是不一样的，比如一个国际部的领导同一个国内的领导思维就不一样，对同一个产品的理解都不一样，他们提的建议或者整改意见本身就可能冲突的，这个对于我们怎么去做是很头疼的。</p>
-<p>企业应用的好处是不管做的怎么样，公司都会推动使用，但是每个人的吐槽、投诉直接关乎企业应用团队的口碑和绩效，也直接影响团队和个人的成就感。</p>
-<p>所以，整理和消化需求是产品需要花大精力做的工作。为此，我们需要考虑很多的问题：</p>
+    <section class="markdown-content"><p>防止表单重复提交是我们在实际开发中经常需要考虑的事情，很多时候，我们可能在页面去做：当提交表单时，将按钮置为disabled，当获取到返回结果后将disabled去掉，这样保证当返回结果之前都无法再次发送请求。但是，很明显，只在前端做处理远远不够都，本文我们探讨都主要还是在后端做逻辑处理。</p>
+<a id="more"></a>
+
+<h3 id="场景一-简单都防止手抖双击（连击）"><a href="#场景一-简单都防止手抖双击（连击）" class="headerlink" title="场景一 简单都防止手抖双击（连击）"></a>场景一 简单都防止手抖双击（连击）</h3><p>用户’手抖’是常见不过的事情，手快也好，鼠标敏感也好，着急提交连续点击鼠标也罢，总的来说，这样的情况下，用户就会出现多次提交表单。造成的现象就是：假设提交报销申请，那么就会出现两单（或多单）内容完全一样的报销申请，很明显，这是不对的。</p>
+<p>这里又分两种情况：</p>
+<h4 id="1、第一次请求结果还没有返回又发起第二次请求"><a href="#1、第一次请求结果还没有返回又发起第二次请求" class="headerlink" title="1、第一次请求结果还没有返回又发起第二次请求"></a>1、第一次请求结果还没有返回又发起第二次请求</h4><p>前面介绍了，这种情况也可在前端处理，当然，我们在后端也得做逻辑判断。这种情况我们也是必须要处理的，如果网络或者接口比较慢，存在连击的话，那么将会产生非常多的相同的数据。</p>
+<p>解决方案：<br>在提交表单前，先获取一个token，这个token在后端生成，比如可以根据jsessionId、登陆用户等可以定位当前用户以及请求等客户端的数据来生成。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String token = MD5(sessionId+userId);</span><br></pre></td></tr></table></figure>
+<p>这个token相当于一个标记，或者类似一把锁，拿到token的才能发送表单提交请求，没有拿到的都不发。</p>
 <ul>
-<li>公司管理风格是怎样的？严格制度化、流程化还是很扁平？</li>
-<li>平台部门制定各种流程是否真的有这个必要，对与员工的使用感受是不是很差？</li>
-<li>这个系统使用场景仅仅只是这个部门这个人提出的这么简单吗？</li>
-<li>我们是做集团信息化，并非为某个人或者某个部门，那么，这个人或者这个部门的需求该如何消化？</li>
-<li>国际化如果一开始不考虑，后面会有大问题，一开始就考虑，好像没人提这个需求？</li>
-<li>企业在发展，系统可大可小，该怎么做，怎么规划？怎么迭代？</li>
-<li>这个系统太专业，是不是采购比较好？</li>
+<li>前端发送Ajax请求，获取token。先从Redis取token，如果存在，则表示这个客户端有一个请求还没有返回，则不给token，返回错误code。如果不存在token，则生成token返回。</li>
+<li>前端如果获取到了错误码，表示之前有请求在处理，则不继续发送请求（根据情况可以决定是否进行提示）；如果获取到了token，则表示可以进行表单到提交。后台拿到token，先校验Redis中是否存在，如果存在，则进行处理，比如保存报销单，逻辑处理完成后将token从Redis中移除。当然，如果不存在token，说明此次请求是不处理的。（使用aop实现完美）</li>
 </ul>
-<p>……</p>
-<p>不管需求最终做不做，怎么做，做的怎么样，在这样混乱的背景下提炼出关键的、有效的、通用的和主流的需求是非常必要的，但是很多时候，很多企业是没有做到的。企业应用体现的是企业管理水平，企业领导水平参差不齐，提的需求也不一定合理，产品经理不假思索、不归纳，直接做，最终导致产品功能杂乱，技术层面开发困难、维护难度大。</p>
-<p>所以，懂管理的产品经理很重要，不仅能理的清需求，更需要推动公司的管理变革。</p>
-<h2 id="研发过程中，这块受重视吗？"><a href="#研发过程中，这块受重视吗？" class="headerlink" title="研发过程中，这块受重视吗？"></a>研发过程中，这块受重视吗？</h2><p>招聘的时候，我们并没有要求候选人必须有企业应用相关工作经验，只要是合格的开发即可，正是这样，很多开发出来的只是一个系统，如果产品不给力，这将是一款满足当前需求的产品，面对日后的管理变革、企业发展、重构都无法迅速响应。</p>
-<p>主要也是企业很多管理者觉得这块研发难度小，简单的认为就是一些小系统，都是CRUD的功能，毕业生都能胜任，其实大错特错了。</p>
-<p>企业应用需要头脑清醒的开发者，因为系统需求多，系统杂，企业给的资源又比较有效，为了避免很多重复劳动，很多基础服务建设非常重要，但是如果技术人员不带脑子，就不会去做，而是一个一个系统的做，浪费人力。比如SSO、权限系统、流程引擎、主数据等等，这些并非一个直接使用的业务系统，但是建设好了之后，却是其他系统必不可少的依赖服务。</p>
-<p>另外，如何解决信息孤岛，使各个系统互联互通，怎么整体迭代，满足移动端、Web端等多端的需求，怎么满足稳定性、安全性、高性能和扩展性的要求。</p>
-<p>如不考虑，做一个系统挖一个坑，一个系统一个坑。</p>
-<p>我的建议是，企业应用一定要有经验的人带队，一定是先抓架构，先建设基础服务，在合理的架构以及稳定、通用的基础服务上去构建集团所需的信息化系统。</p>
-<h2 id="有限的资源怎么做好那么多的系统？"><a href="#有限的资源怎么做好那么多的系统？" class="headerlink" title="有限的资源怎么做好那么多的系统？"></a>有限的资源怎么做好那么多的系统？</h2><p>企业这块一般都不是最核心的业务，资源有限，需求来的急，不敢不做，又不能不做。</p>
-<p>首先做好项目管理，多少人干多少事，团队应该坚守宁缺勿滥的原则。承接需求的时候，需要帮分析这个需求当前环境下是否一定要做，只有必须要做并且有价值的才进入开发环境。</p>
-<p>在研发阶段，一定要想好这个需求或者系统或者服务未来5年的规划是怎样的，否则月月在改需求，一定要调研行业技术实现方式，一定做到主流，如该是取巧的实现，将来维护困难，也会沦为笑柄。<br>重视基础服务的建设，不要重复造轮子，内部资源一定共享，格局要高，不要为了求快求简单直接一个单体服务、从前端到后端一个人快速搞定，信息孤岛就是这么产生的。</p>
-<p>严格遵守开发规范，正是由于微服务和小系统过多，统一的规范能够使小团队干大事情。</p>
+<p><img src="http://funga.oss-cn-beijing.aliyuncs.com/images/form-submit-1.png" alt=""></p>
+<h4 id="2、第一次请求已经结束才发起的第二次请求"><a href="#2、第一次请求已经结束才发起的第二次请求" class="headerlink" title="2、第一次请求已经结束才发起的第二次请求"></a>2、第一次请求已经结束才发起的第二次请求</h4><p>这种情况与前面一种其实不一样，当前两次请求其实是相互独立的，我提交了一次报销申请，我肯定还可以再次提交一次报销申请，如果我们做了上述的防止表单重复提交校验，那么这种情况下又需要做什么呢？</p>
+<p>后端处理到前端获取到结果可能是存在网络延迟的，即使结果已经返回了，基于原来表单的数据，可能存在连击的情况，也就是说，可能将完全一模一样的表单数据再次进行了提交，并且不在第一次情况内，如果是报销单，那么我依然可能被保存了两条一模一样的报销申请。</p>
+<p>解决方案：</p>
+<p>我们以报销为例，如果短时间内提交相同内容的报销内容，我们是否可以认为是重复提交呢？对于报销来说，相同的报销，我们可以把具有相同报销金额、报销类型、报销说明等字段相同则认为相同（根据实际情况）。</p>
+<ul>
+<li>前端提交表单，我们根据关键字段的内容生成一个token（拥有相同的内容，token必然相同），我们去Redis中查询是否有此token：如果有，则表示表单算重复提交，本次请求不处理或者返回上次的结果；如果没有，则将token存于Redis。</li>
+<li>我们保存报销数据，处理完成后，我们将结果返回之前也存入Redis，这个和之前token一样，需要设置一个失效时间（比如5秒失效，5秒内不可以发送同样数据的表单）</li>
+</ul>
+<p>这样，我们可以保证5秒内，不可能提交完全数据一样的表单并且都会被处理。</p>
+<p>由于我们系统一般集群部署，所以需要使用到Redis。</p>
 </section>
     <!-- Tags START -->
     
       <div class="tags">
         <span>Tags:</span>
         
-  <a href="/tags#信息化" >
-    <span class="tag-code">信息化</span>
-  </a>
-
-  <a href="/tags#OA" >
-    <span class="tag-code">OA</span>
-  </a>
-
-  <a href="/tags#企业应用" >
-    <span class="tag-code">企业应用</span>
+  <a href="/tags#Web开发" >
+    <span class="tag-code">Web开发</span>
   </a>
 
       </div>
@@ -177,13 +167,13 @@
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
     
-      <a class="nav-left" href="/2017/09/01/dockerfileBest/">
-        <span class="nav-arrow">← </span>
-        
-          Dockerfile最佳实践
-        
-      </a>
     
+      <a class="nav-right" href="/2016/01/20/velocityPdf/">
+        
+          使用Velocity模板作为导出PDF的模板
+        
+        <span class="nav-arrow"> →</span>
+      </a>
     
   </div>
 
@@ -248,7 +238,7 @@
   <div class="toc-main">
     <strong class="toc-title">Catalog</strong>
     
-      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#需求是什么？"><span class="toc-nav-text">需求是什么？</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#研发过程中，这块受重视吗？"><span class="toc-nav-text">研发过程中，这块受重视吗？</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#有限的资源怎么做好那么多的系统？"><span class="toc-nav-text">有限的资源怎么做好那么多的系统？</span></a></li></ol>
+      <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#场景一-简单都防止手抖双击（连击）"><span class="toc-nav-text">场景一 简单都防止手抖双击（连击）</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#1、第一次请求结果还没有返回又发起第二次请求"><span class="toc-nav-text">1、第一次请求结果还没有返回又发起第二次请求</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#2、第一次请求已经结束才发起的第二次请求"><span class="toc-nav-text">2、第一次请求已经结束才发起的第二次请求</span></a></li></ol></li></ol>
     
   </div>
 </aside>
@@ -258,7 +248,7 @@
 
 <script>
   (function () {
-    var url = 'http://doit.cc/2019/06/01/oa1/';
+    var url = 'http://doit.cc/2015/01/11/formSubmitRepeat/';
     var banner = ''
     if (banner !== '' && banner !== 'undefined' && banner !== 'null') {
       $('#article-banner').css({

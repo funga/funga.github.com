@@ -147,17 +147,11 @@
 
 <p>通过结果我们看到，id已经在对象中了，下面总结下实现需要注意的点：</p>
 <ul>
-<li><ol>
-<li>Mybatis版本，据说低版本的Myabtis版本并不支持，所以建议升级到最新的版本，本例中版本是<code>3.4.6</code>.</li>
-</ol>
+<li><p>Mybatis版本，据说低版本的Myabtis版本并不支持，所以建议升级到最新的版本，本例中版本是<code>3.4.6</code>.</p>
 </li>
-<li><ol start="2">
-<li>批量插入的xml中参数类型<code>parameterType=&quot;java.util.ArrayList&quot;</code>,这和单条插入是不一样的。</li>
-</ol>
+<li><p>批量插入的xml中参数类型<code>parameterType=&quot;java.util.ArrayList&quot;</code>,这和单条插入是不一样的。</p>
 </li>
-<li><ol start="3">
-<li><code>foreach</code>中的<code>collection</code>必须是<em>list</em>，也就是说，接口中<code>@Param(&quot;list&quot;)</code>和xml中<code>collection=&quot;list&quot;</code>是固定的，这很奇怪，因为改成其它的比如<code>studentList</code>就不行了。​</li>
-</ol>
+<li><p><code>foreach</code>中的<code>collection</code>必须是<em>list</em>，也就是说，接口中<code>@Param(&quot;list&quot;)</code>和xml中<code>collection=&quot;list&quot;</code>是固定的，这很奇怪，因为改成其它的比如<code>studentList</code>就不行了。​</p>
 </li>
 </ul>
 </section>
@@ -181,6 +175,13 @@
     
   <div class="nav-container">
     <!-- reverse left and right to put prev and next in a more logic postition -->
+    
+      <a class="nav-left" href="/2016/01/20/velocityPdf/">
+        <span class="nav-arrow">← </span>
+        
+          使用Velocity模板作为导出PDF的模板
+        
+      </a>
     
     
       <a class="nav-right" href="/2016/07/12/hexo/">
